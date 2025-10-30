@@ -5,9 +5,12 @@
     "jsx": "react-jsx",
     "strict": true,
     "baseUrl": ".",
-    "paths": { "~/*": ["src/*"] },
+    "paths": {
+      "~/*": ["src/*"]
+    },
     "moduleResolution": "Bundler",
     "skipLibCheck": true,
     "resolveJsonModule": true
-  }
+  },
+  "extends": "expo/tsconfig.base"
 }
