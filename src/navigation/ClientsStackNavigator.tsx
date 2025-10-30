@@ -13,12 +13,16 @@ export default function ClientsStackNavigator() {
       <Stack.Screen
         name="AddClient"
         component={AddClientScreen}
-        options={{ headerShown: true, title: "Novo Cliente" }}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="ClientDetails"
         component={ClientDetailsScreen}
-        options={{ headerShown: true, title: "Detalhes do Cliente" }}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

@@ -13,12 +13,16 @@ export default function ServicesStackNavigator() {
       <Stack.Screen
         name="AddService"
         component={AddServiceScreen}
-        options={{ headerShown: true, title: "Novo Atendimento" }}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="ServiceDetails"
         component={ServiceDetailsScreen}
-        options={{ headerShown: true, title: "Detalhes do Atendimento" }}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

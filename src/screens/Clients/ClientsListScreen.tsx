@@ -11,6 +11,7 @@ import ScreenContainer from "~/components/ScreenContainer";
 import PrimaryButton from "~/components/PrimaryButton";
 import { supabase } from "~/services/supabaseClient";
 import { useNavigation } from "@react-navigation/native";
+import CustomHeader from "~/components/CustomHeader";
 
 interface Client {
   id: string;
@@ -38,49 +39,60 @@ const ClientsListScreen: React.FC = () => {
     load();
   }, []);
 
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <ActivityIndicator style={{ marginTop: 20 }} />
+      </ScreenContainer>
+    );
+  }
+
   return (
-    <ScreenContainer scroll maxWidth={960}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Clientes</Text>
-        <PrimaryButton
-          title="Novo cliente"
-          onPress={() => navigation.navigate("AddClient" as never)}
-        />
-      </View>
-      {loading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList
-          data={clients}
-          keyExtractor={(item) => item.id}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() =>
-                navigation.navigate(
-                  "ClientDetails" as never,
-                  { id: item.id } as never
-                )
-              }
-              style={styles.card}
-            >
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              {!!item.email && <Text style={styles.cardSub}>{item.email}</Text>}
-              {!!item.phone && <Text style={styles.cardSub}>{item.phone}</Text>}
-            </Pressable>
-          )}
-        />
-      )}
+    <ScreenContainer maxWidth={960}>
+      <FlatList
+        data={clients}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>Clientes</Text>
+            <PrimaryButton
+              title="Novo cliente"
+              onPress={() => navigation.navigate("AddClient" as never)}
+            />
+          </View>
+        }
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() =>
+              navigation.navigate(
+                "ClientDetails" as never,
+                { id: item.id } as never
+              )
+            }
+            style={styles.card}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            {!!item.email && <Text style={styles.cardSub}>{item.email}</Text>}
+            {!!item.phone && <Text style={styles.cardSub}>{item.phone}</Text>}
+          </Pressable>
+        )}
+      />
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginVertical: 24,
   },
   title: { fontSize: 22, fontWeight: "600" },
   card: {

@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import ScreenContainer from '~/components/ScreenContainer';
-import PrimaryButton from '~/components/PrimaryButton';
-import { useAuth } from '~/context/AuthContext';
+import React from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import ScreenContainer from "~/components/ScreenContainer";
+import PrimaryButton from "~/components/PrimaryButton";
+import { useAuth } from "~/context/AuthContext";
+import { Avatar } from "react-native-paper";
 
 const ProfileScreen: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -11,17 +12,23 @@ const ProfileScreen: React.FC = () => {
     try {
       await signOut();
     } catch (e: any) {
-      Alert.alert('Erro', e?.message ?? 'Não foi possível sair.');
+      Alert.alert("Erro", e?.message ?? "Não foi possível sair.");
     }
   };
 
   return (
     <ScreenContainer>
       <View style={styles.container}>
+        <View style={{ alignItems: "center", marginBottom: 16 }}>
+          <Avatar.Text
+            size={100}
+            label={user?.email ? user.email.charAt(0).toUpperCase() : "U"}
+          />
+        </View>
         <Text style={styles.title}>Perfil</Text>
         <View style={styles.card}>
           <Text style={styles.label}>E-mail</Text>
-          <Text style={styles.value}>{user?.email ?? '-'}</Text>
+          <Text style={styles.value}>{user?.email ?? "-"}</Text>
         </View>
         <PrimaryButton title="Sair" onPress={handleSignOut} />
       </View>
@@ -30,12 +37,23 @@ const ProfileScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { width: '100%', maxWidth: 720, alignSelf: 'center' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 12, textAlign: 'center' },
-  card: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, padding: 12, backgroundColor: '#fff', marginBottom: 16 },
-  label: { color: '#555', marginBottom: 4 },
-  value: { fontSize: 16, fontWeight: '500' },
+  container: { width: "100%", maxWidth: 720, alignSelf: "center" },
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: "#fff",
+    marginBottom: 16,
+  },
+  label: { color: "#555", marginBottom: 4 },
+  value: { fontSize: 16, fontWeight: "500" },
 });
 
 export default ProfileScreen;
-
