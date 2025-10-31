@@ -8,7 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "expo export -p web",
-    "vercel-build": "expo export -p web"
+    "deploy": "vercel deploy --prod"
   },
   "dependencies": {
     "@babel/code-frame": "^7.0.0",
