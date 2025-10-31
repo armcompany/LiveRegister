@@ -1,9 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": "yarn build",
   "outputDirectory": "dist",
-  "installCommand": "yarn install",
-  "devCommand": "yarn web",
   "rewrites": [
     {
       "source": "/(.*)",
