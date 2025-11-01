@@ -8,46 +8,52 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "~/services/supabaseClient";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const schema = yup.object({
-  name: yup.string().required("Informe o nome."),
-  phone: yup.string().defined(),
-  email: yup.string().email("E-mail inválido.").defined(),
-  street: yup.string().defined(),
-  number: yup.string().defined(),
-  city: yup.string().defined(),
-  state: yup.string().defined(),
-  zip: yup.string().defined(),
+  name: yup.string().required("Informe o nome da unidade."),
+  street: yup.string().default(""),
+  number: yup.string().default(""),
+  city: yup.string().default(""),
+  state: yup.string().default(""),
+  zip: yup.string().default(""),
+  responsible_name: yup.string().default(""),
+  responsible_phone: yup.string().default(""),
+  notes: yup.string().default(""),
 });
 
 type Form = yup.InferType<typeof schema>;
 
-const AddClientScreen: React.FC = () => {
+const AddUnitScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const clientId: string = route.params?.clientId;
+
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<Form>({
     resolver: yupResolver(schema),
     defaultValues: {
       name: "",
-      phone: "",
-      email: "",
       street: "",
       number: "",
       city: "",
       state: "",
       zip: "",
+      responsible_name: "",
+      responsible_phone: "",
+      notes: "",
     },
   });
+
   const [loading, setLoading] = React.useState(false);
 
   const onSubmit = async (values: Form) => {
     try {
       setLoading(true);
+
       const address = {
         street: values.street,
         number: values.number,
@@ -55,16 +61,20 @@ const AddClientScreen: React.FC = () => {
         state: values.state,
         zip: values.zip,
       };
-      const { error } = await supabase.from("clients").insert({
+
+      const { error } = await supabase.from("units").insert({
+        client_id: clientId,
         name: values.name,
-        phone: values.phone,
-        email: values.email,
         address,
+        responsible_name: values.responsible_name,
+        responsible_phone: values.responsible_phone,
+        notes: values.notes,
       });
+
       if (error) throw error;
-      Alert.alert("Cliente criado", "O cliente foi cadastrado com sucesso.");
-      reset();
-      navigation.navigate("ClientsList" as never);
+
+      Alert.alert("Unidade criada", "A unidade foi cadastrada com sucesso.");
+      navigation.goBack();
     } catch (e: any) {
       Alert.alert("Erro", e?.message ?? "Não foi possível salvar.");
     } finally {
@@ -74,14 +84,15 @@ const AddClientScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Novo Cliente" />
+      <CustomHeader title="Nova Unidade" />
+
       <Controller
         control={control}
         name="name"
         render={({ field: { onChange, value, onBlur } }) => (
           <FormInput
-            label="Nome"
-            placeholder="Nome completo"
+            label="Nome da Unidade *"
+            placeholder="Ex: Matriz, Filial Centro"
             onChangeText={onChange}
             value={value}
             onBlur={onBlur}
@@ -89,46 +100,16 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
-      <Controller
-        control={control}
-        name="phone"
-        render={({ field: { onChange, value, onBlur } }) => (
-          <FormInput
-            label="Telefone"
-            placeholder="(11) 99999-9999"
-            keyboardType="phone-pad"
-            onChangeText={onChange}
-            value={value}
-            onBlur={onBlur}
-            error={errors.phone?.message}
-          />
-        )}
-      />
-      <Controller
-        control={control}
-        name="email"
-        render={({ field: { onChange, value, onBlur } }) => (
-          <FormInput
-            label="E-mail"
-            placeholder="email@exemplo.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            onChangeText={onChange}
-            value={value}
-            onBlur={onBlur}
-            error={errors.email?.message}
-          />
-        )}
-      />
-      <View style={{ height: 8 }} />
-      <Text style={styles.section}>Endereço</Text>
+
+      <Text style={styles.sectionTitle}>Endereço</Text>
+
       <Controller
         control={control}
         name="street"
         render={({ field: { onChange, value, onBlur } }) => (
           <FormInput
-            label="Rua"
-            placeholder="Rua"
+            label="Rua/Avenida"
+            placeholder="Nome da rua"
             onChangeText={onChange}
             value={value}
             onBlur={onBlur}
@@ -136,6 +117,7 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
+
       <Controller
         control={control}
         name="number"
@@ -150,6 +132,7 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
+
       <Controller
         control={control}
         name="city"
@@ -164,6 +147,7 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
+
       <Controller
         control={control}
         name="state"
@@ -171,6 +155,8 @@ const AddClientScreen: React.FC = () => {
           <FormInput
             label="Estado"
             placeholder="UF"
+            autoCapitalize="characters"
+            maxLength={2}
             onChangeText={onChange}
             value={value}
             onBlur={onBlur}
@@ -178,6 +164,7 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
+
       <Controller
         control={control}
         name="zip"
@@ -192,8 +179,59 @@ const AddClientScreen: React.FC = () => {
           />
         )}
       />
+
+      <View style={styles.divider} />
+
+      <Controller
+        control={control}
+        name="responsible_name"
+        render={({ field: { onChange, value, onBlur } }) => (
+          <FormInput
+            label="Responsável pela Unidade"
+            placeholder="Nome do responsável"
+            onChangeText={onChange}
+            value={value}
+            onBlur={onBlur}
+            error={errors.responsible_name?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="responsible_phone"
+        render={({ field: { onChange, value, onBlur } }) => (
+          <FormInput
+            label="Telefone do Responsável"
+            placeholder="(00) 00000-0000"
+            keyboardType="phone-pad"
+            onChangeText={onChange}
+            value={value}
+            onBlur={onBlur}
+            error={errors.responsible_phone?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="notes"
+        render={({ field: { onChange, value, onBlur } }) => (
+          <FormInput
+            label="Observações"
+            placeholder="Notas adicionais sobre a unidade"
+            multiline
+            numberOfLines={3}
+            onChangeText={onChange}
+            value={value}
+            onBlur={onBlur}
+            error={errors.notes?.message}
+          />
+        )}
+      />
+
       <PrimaryButton
-        title={loading ? "Salvando..." : "Salvar"}
+        title={loading ? "Salvando..." : "Salvar Unidade"}
         disabled={loading}
         onPress={handleSubmit(onSubmit)}
       />
@@ -202,7 +240,18 @@ const AddClientScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  section: { fontSize: 16, fontWeight: "600", marginBottom: 8, marginTop: 12 },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#e5e7eb",
+    marginVertical: 16,
+  },
 });
 
-export default AddClientScreen;
+export default AddUnitScreen;

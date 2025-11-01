@@ -9,8 +9,10 @@ import {
 import ScreenContainer from "~/components/ScreenContainer";
 import CustomHeader from "~/components/CustomHeader";
 import PrimaryButton from "~/components/PrimaryButton";
+import CollapsibleUnitCard from "~/components/CollapsibleUnitCard";
 import { supabase } from "~/services/supabaseClient";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { Unit, Equipment } from "~/types";
 
 const ClientDetailsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -19,6 +21,10 @@ const ClientDetailsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [client, setClient] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [equipmentsByUnit, setEquipmentsByUnit] = useState<
+    Record<string, Equipment[]>
+  >({});
 
   const load = async () => {
     setLoading(true);
@@ -32,8 +38,33 @@ const ClientDetailsScreen: React.FC = () => {
       .select("id,type,date,status")
       .eq("client_id", id)
       .order("created_at", { ascending: false });
+    const { data: u } = await supabase
+      .from("units")
+      .select("*")
+      .eq("client_id", id)
+      .order("name", { ascending: true });
+    const { data: e } = await supabase
+      .from("equipment")
+      .select("*")
+      .in(
+        "unit_id",
+        (u ?? []).map((unit) => unit.id)
+      );
+
     setClient(c);
     setServices(s ?? []);
+    setUnits(u ?? []);
+
+    // Group equipment by unit_id
+    const grouped: Record<string, Equipment[]> = {};
+    (e ?? []).forEach((eq) => {
+      if (!grouped[eq.unit_id]) {
+        grouped[eq.unit_id] = [];
+      }
+      grouped[eq.unit_id].push(eq);
+    });
+    setEquipmentsByUnit(grouped);
+
     setLoading(false);
   };
 
@@ -99,6 +130,71 @@ const ClientDetailsScreen: React.FC = () => {
         </View>
       )}
 
+      {/* Units Section */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Unidades de Atendimento</Text>
+      </View>
+
+      {units.length === 0 ? (
+        <View style={styles.card}>
+          <Text style={styles.emptyText}>
+            Nenhuma unidade cadastrada ainda.
+          </Text>
+        </View>
+      ) : (
+        units.map((unit) => (
+          <CollapsibleUnitCard
+            key={unit.id}
+            unit={unit}
+            equipments={equipmentsByUnit[unit.id] ?? []}
+            onAddEquipment={() => {
+              // Navigate to AddEquipment
+              navigation.navigate(
+                "AddEquipment" as never,
+                {
+                  unitId: unit.id,
+                  clientId: id,
+                } as never
+              );
+            }}
+            onServiceEquipment={(equipment) => {
+              // Navigate to AddService with pre-filled data
+              navigation.navigate(
+                "ServicesList" as never,
+                {
+                  screen: "AddService",
+                  params: {
+                    clientId: id,
+                    unitId: unit.id,
+                    equipmentId: equipment.id,
+                  },
+                } as never
+              );
+            }}
+            onEquipmentDetails={(equipment) => {
+              // Navigate to EquipmentDetails
+              navigation.navigate(
+                "EquipmentDetails" as never,
+                {
+                  equipmentId: equipment.id,
+                } as never
+              );
+            }}
+          />
+        ))
+      )}
+
+      <TouchableOpacity
+        style={styles.addUnitButton}
+        onPress={() =>
+          navigation.navigate("AddUnit" as never, { clientId: id } as never)
+        }
+        activeOpacity={0.7}
+      >
+        <Text style={styles.addUnitButtonText}>+ Adicionar Unidade</Text>
+      </TouchableOpacity>
+      <View style={{ height: 16 }} />
+
       {/* Actions */}
       <PrimaryButton
         title="Novo Atendimento"
@@ -144,7 +240,7 @@ const ClientDetailsScreen: React.FC = () => {
                   <Text style={styles.statusText}>{s.status}</Text>
                 </View>
               </View>
-              <Text style={styles.serviceDate}>📅 {s.date}</Text>
+              <Text style={styles.serviceDate}>{s.date}</Text>
             </TouchableOpacity>
           ))
         )}
@@ -243,6 +339,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#fff",
+  },
+  sectionHeader: {
+    marginBottom: 12,
+  },
+  addUnitButton: {
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#2563eb",
+    borderRadius: 12,
+    borderStyle: "dashed",
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  addUnitButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2563eb",
   },
 });
 
