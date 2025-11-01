@@ -32,18 +32,23 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
   const uploadImage = async (uri: string): Promise<string | null> => {
     try {
-      const fileExt = uri.split(".").pop();
+      const fileExt = uri.split(".").pop() || "jpg";
       const fileName = `${Date.now()}-${Math.random()
         .toString(36)
         .substring(7)}.${fileExt}`;
       const filePath = `equipment/${fileName}`;
 
-      const response = await fetch(uri);
-      const blob = await response.blob();
+      // Create FormData for React Native
+      const formData = new FormData();
+      formData.append("file", {
+        uri: uri,
+        name: fileName,
+        type: `image/${fileExt}`,
+      } as any);
 
       const { data, error } = await supabase.storage
         .from("image")
-        .upload(filePath, blob, {
+        .upload(filePath, formData, {
           contentType: `image/${fileExt}`,
           upsert: false,
         });
@@ -56,6 +61,7 @@ const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
       return publicUrl;
     } catch (error: any) {
+      console.error("Upload error:", error);
       Alert.alert("Erro", `Falha ao fazer upload: ${error.message}`);
       return null;
     }
@@ -201,6 +207,7 @@ const styles = StyleSheet.create({
   photoWrapper: {
     position: "relative",
     marginRight: 12,
+    paddingVertical: 8,
   },
   photo: {
     width: 100,
@@ -210,9 +217,9 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     position: "absolute",
-    top: -8,
+    top: 0,
     right: -8,
-    backgroundColor: "#ef4444",
+    backgroundColor: "#726161ff",
     width: 24,
     height: 24,
     borderRadius: 12,
