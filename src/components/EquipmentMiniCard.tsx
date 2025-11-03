@@ -43,7 +43,7 @@ const EquipmentMiniCard: React.FC<EquipmentMiniCardProps> = ({
         </View>
 
         {equipment.location && (
-          <Text style={styles.location}>📍 {equipment.location}</Text>
+          <Text style={styles.location}>{equipment.location}</Text>
         )}
 
         {equipment.type && (

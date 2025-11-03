@@ -3,6 +3,7 @@ import { View, Text, Alert, StyleSheet } from "react-native";
 import ScreenContainer from "~/components/ScreenContainer";
 import CustomHeader from "~/components/CustomHeader";
 import FormInput from "~/components/FormInput";
+import CepInput from "~/components/CepInput";
 import PrimaryButton from "~/components/PrimaryButton";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
@@ -33,6 +34,7 @@ const AddUnitScreen: React.FC = () => {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<Form>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -49,6 +51,19 @@ const AddUnitScreen: React.FC = () => {
   });
 
   const [loading, setLoading] = React.useState(false);
+
+  const handleAddressFetched = (address: any) => {
+    // Auto-fill address fields from ViaCEP
+    if (address.logradouro) {
+      setValue("street", address.logradouro);
+    }
+    if (address.localidade) {
+      setValue("city", address.localidade);
+    }
+    if (address.uf) {
+      setValue("state", address.uf);
+    }
+  };
 
   const onSubmit = async (values: Form) => {
     try {
@@ -74,7 +89,10 @@ const AddUnitScreen: React.FC = () => {
       if (error) throw error;
 
       Alert.alert("Unidade criada", "A unidade foi cadastrada com sucesso.");
-      navigation.goBack();
+      navigation.navigate(
+        "ClientDetails" as never,
+        { id: clientId, refresh: true } as never
+      );
     } catch (e: any) {
       Alert.alert("Erro", e?.message ?? "Não foi possível salvar.");
     } finally {
@@ -84,7 +102,7 @@ const AddUnitScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Nova Unidade" />
+      {/* <CustomHeader title="Nova Unidade" /> */}
 
       <Controller
         control={control}
@@ -102,6 +120,21 @@ const AddUnitScreen: React.FC = () => {
       />
 
       <Text style={styles.sectionTitle}>Endereço</Text>
+
+      <Controller
+        control={control}
+        name="zip"
+        render={({ field: { onChange, value } }) => (
+          <CepInput
+            label="CEP"
+            value={value}
+            onChangeText={onChange}
+            onAddressFetched={handleAddressFetched}
+            error={errors.zip?.message}
+            disabled={loading}
+          />
+        )}
+      />
 
       <Controller
         control={control}
@@ -161,21 +194,6 @@ const AddUnitScreen: React.FC = () => {
             value={value}
             onBlur={onBlur}
             error={errors.state?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="zip"
-        render={({ field: { onChange, value, onBlur } }) => (
-          <FormInput
-            label="CEP"
-            placeholder="00000-000"
-            onChangeText={onChange}
-            value={value}
-            onBlur={onBlur}
-            error={errors.zip?.message}
           />
         )}
       />

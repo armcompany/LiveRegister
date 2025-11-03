@@ -4,7 +4,6 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-import { Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function CustomDrawerContent(props: any) {
@@ -33,7 +32,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 30,
+    gap: 20,
     justifyContent: "space-between",
     padding: 20,
     paddingTop: 40,

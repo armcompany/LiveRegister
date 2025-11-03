@@ -1771,6 +1771,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/datetimepicker@npm:8.4.4":
+  version: 8.4.4
+  resolution: "@react-native-community/datetimepicker@npm:8.4.4"
+  dependencies:
+    invariant: ^2.2.4
+  peerDependencies:
+    expo: ">=52.0.0"
+    react: "*"
+    react-native: "*"
+    react-native-windows: "*"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+    react-native-windows:
+      optional: true
+  checksum: 659a19ec6ea6ec7538519411c60ff8eeae330b40248e28a38b540e5d8f758859f6a0fa8e9e39efbafbc6d44b57e3f68cb972b5fd4abb9a173651ca09a1ff28e5
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.81.5":
   version: 0.81.5
   resolution: "@react-native/assets-registry@npm:0.81.5"
@@ -2076,6 +2095,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-navigation/bottom-tabs@npm:^7.7.3":
+  version: 7.7.3
+  resolution: "@react-navigation/bottom-tabs@npm:7.7.3"
+  dependencies:
+    "@react-navigation/elements": ^2.8.1
+    color: ^4.2.3
+    sf-symbols-typescript: ^2.1.0
+  peerDependencies:
+    "@react-navigation/native": ^7.1.19
+    react: ">= 18.2.0"
+    react-native: "*"
+    react-native-safe-area-context: ">= 4.0.0"
+    react-native-screens: ">= 4.0.0"
+  checksum: 1d9aefae3fe60bdae6506aa67f9e156876e22f1126e9effd924c23e232252d67fc0017f934625eac0530bff6d598e685427fb4feb1693b7950955f9ccdbc6f73
+  languageName: node
+  linkType: hard
+
 "@react-navigation/core@npm:^7.13.0":
   version: 7.13.0
   resolution: "@react-navigation/core@npm:7.13.0"
@@ -2131,6 +2167,26 @@ __metadata:
     "@react-native-masked-view/masked-view":
       optional: true
   checksum: 4db9f77bc749fb45664358706c9fe197cd4607c64172db340faf3f2be033e18997423c277f31fc649701c4436eec6e2ec4fb5dba2c62bd20193c9e8b8372a8ba
+  languageName: node
+  linkType: hard
+
+"@react-navigation/elements@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "@react-navigation/elements@npm:2.8.1"
+  dependencies:
+    color: ^4.2.3
+    use-latest-callback: ^0.2.4
+    use-sync-external-store: ^1.5.0
+  peerDependencies:
+    "@react-native-masked-view/masked-view": ">= 0.2.0"
+    "@react-navigation/native": ^7.1.19
+    react: ">= 18.2.0"
+    react-native: "*"
+    react-native-safe-area-context: ">= 4.0.0"
+  peerDependenciesMeta:
+    "@react-native-masked-view/masked-view":
+      optional: true
+  checksum: 82e2d4ae99ef0dad3f8a8a70fe8678d7ee41e4e216859ec78e720a0816efdb370940ccbfc7f75874fcd98207336b09cbc44e6a4d38192f7474ef330052bb9195
   languageName: node
   linkType: hard
 
@@ -4782,6 +4838,8 @@ __metadata:
     "@babel/code-frame": ^7.0.0
     "@babel/core": ^7.28.5
     "@hookform/resolvers": ^5.2.2
+    "@react-native-community/datetimepicker": 8.4.4
+    "@react-navigation/bottom-tabs": ^7.7.3
     "@react-navigation/drawer": ^7.7.1
     "@react-navigation/native": ^7.1.19
     "@react-navigation/native-stack": ^7.6.1
@@ -4804,6 +4862,8 @@ __metadata:
     react-native: 0.81.5
     react-native-gesture-handler: ^2.29.0
     react-native-image-picker: ^8.2.1
+    react-native-mmkv: 3.3.3
+    react-native-nitro-modules: 0.31.4
     react-native-paper: ^5.14.5
     react-native-reanimated: ^4.1.3
     react-native-safe-area-context: ^5.6.2
@@ -6300,6 +6360,26 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 8fb6d8ab7b953c7d7cec8c987cef24f1c5348a293a85cb49c7c53b54ef110c0ca746736ae730e297603c8c76020df912e93915fb17518c4f2f91143757177aba
+  languageName: node
+  linkType: hard
+
+"react-native-mmkv@npm:3.3.3":
+  version: 3.3.3
+  resolution: "react-native-mmkv@npm:3.3.3"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 2f4f6ba36f2c00a1374cd3c0303207e7c0a0b7b2504c4f1986a423a3d8295eb817299fc1ca11e37c425df60648c5a0d02be882f1890924167724775433dd2598
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:0.31.4":
+  version: 0.31.4
+  resolution: "react-native-nitro-modules@npm:0.31.4"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 9d251ec788eafb5c66033a1f376e2a8f9dfc8962a22e8511f6451bc50bf324549fd4e5113ee5bed59a993c0afc3288e8722d854239a33c00faae26848a211fde
   languageName: node
   linkType: hard
 

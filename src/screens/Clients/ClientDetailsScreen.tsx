@@ -7,12 +7,16 @@ import {
   TouchableOpacity,
 } from "react-native";
 import ScreenContainer from "~/components/ScreenContainer";
-import CustomHeader from "~/components/CustomHeader";
 import PrimaryButton from "~/components/PrimaryButton";
 import CollapsibleUnitCard from "~/components/CollapsibleUnitCard";
 import { supabase } from "~/services/supabaseClient";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { Unit, Equipment } from "~/types";
+import { dateFormat } from "~/utils/functions";
 
 const ClientDetailsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -72,6 +76,21 @@ const ClientDetailsScreen: React.FC = () => {
     load();
   }, [id]);
 
+  // Reload when returning from a screen that made changes
+  useFocusEffect(
+    React.useCallback(() => {
+      const params = (navigation as any)
+        .getState()
+        ?.routes?.find((r: any) => r.name === "ClientDetails")?.params;
+
+      if (params?.refresh) {
+        load();
+        // Clear the refresh param
+        navigation.setParams({ refresh: undefined } as never);
+      }
+    }, [navigation])
+  );
+
   if (loading)
     return (
       <ScreenContainer>
@@ -89,7 +108,7 @@ const ClientDetailsScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Detalhes do Cliente" />
+      {/* <CustomHeader title="Detalhes do Cliente" /> */}
 
       {/* Client Info Card */}
       <View style={styles.card}>
@@ -160,14 +179,11 @@ const ClientDetailsScreen: React.FC = () => {
             onServiceEquipment={(equipment) => {
               // Navigate to AddService with pre-filled data
               navigation.navigate(
-                "ServicesList" as never,
+                "AddService" as never,
                 {
-                  screen: "AddService",
-                  params: {
-                    clientId: id,
-                    unitId: unit.id,
-                    equipmentId: equipment.id,
-                  },
+                  clientId: id,
+                  unitId: unit.id,
+                  equipmentId: equipment.id,
                 } as never
               );
             }}
@@ -199,10 +215,7 @@ const ClientDetailsScreen: React.FC = () => {
       <PrimaryButton
         title="Novo Atendimento"
         onPress={() =>
-          navigation.navigate(
-            "ServicesList" as never,
-            { screen: "AddService", params: { clientId: id } } as never
-          )
+          navigation.navigate("AddService" as never, { clientId: id } as never)
         }
       />
       <View style={{ height: 16 }} />
@@ -223,8 +236,8 @@ const ClientDetailsScreen: React.FC = () => {
               style={styles.serviceItem}
               onPress={() =>
                 navigation.navigate(
-                  "ServicesList" as never,
-                  { screen: "ServiceDetails", params: { id: s.id } } as never
+                  "ServiceDetails" as never,
+                  { id: s.id } as never
                 )
               }
               activeOpacity={0.7}
@@ -240,7 +253,7 @@ const ClientDetailsScreen: React.FC = () => {
                   <Text style={styles.statusText}>{s.status}</Text>
                 </View>
               </View>
-              <Text style={styles.serviceDate}>{s.date}</Text>
+              <Text style={styles.serviceDate}>{dateFormat(s.date)}</Text>
             </TouchableOpacity>
           ))
         )}

@@ -8,20 +8,26 @@ const Stack = createNativeStackNavigator();
 
 export default function ServicesStackNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ServicesListMain" component={ServicesListScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      <Stack.Screen
+        name="ServicesList"
+        component={ServicesListScreen}
+        options={{ title: "Serviços" }}
+      />
       <Stack.Screen
         name="AddService"
         component={AddServiceScreen}
         options={{
-          headerShown: false,
+          headerShown: true,
+          title: "Novo Serviço",
         }}
       />
       <Stack.Screen
         name="ServiceDetails"
         component={ServiceDetailsScreen}
         options={{
-          headerShown: false,
+          headerShown: true,
+          title: "Detalhes do Serviço",
         }}
       />
     </Stack.Navigator>

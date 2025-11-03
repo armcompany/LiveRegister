@@ -6,47 +6,65 @@ import ClientDetailsScreen from "~/screens/Clients/ClientDetailsScreen";
 import AddUnitScreen from "~/screens/Units/AddUnitScreen";
 import AddEquipmentScreen from "~/screens/Equipment/AddEquipmentScreen";
 import EquipmentDetailsScreen from "~/screens/Equipment/EquipmentDetailsScreen";
+import AddServiceScreen from "~/screens/Services/AddServiceScreen";
+import ServiceDetailsScreen from "~/screens/Services/ServiceDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 
 export default function ClientsStackNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ClientsListMain" component={ClientsListScreen} />
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ClientsList"
+        component={ClientsListScreen}
+        options={{ title: "Clientes" }}
+      />
       <Stack.Screen
         name="AddClient"
         component={AddClientScreen}
         options={{
-          headerShown: false,
+          title: "Novo Cliente",
         }}
       />
       <Stack.Screen
         name="ClientDetails"
         component={ClientDetailsScreen}
         options={{
-          headerShown: false,
+          title: "Detalhes do Cliente",
         }}
       />
       <Stack.Screen
         name="AddUnit"
         component={AddUnitScreen}
         options={{
-          headerShown: false,
+          title: "Nova Unidade",
         }}
       />
       <Stack.Screen
         name="AddEquipment"
         component={AddEquipmentScreen}
         options={{
-          headerShown: false,
+          title: "Novo Equipamento",
         }}
       />
       <Stack.Screen
         name="EquipmentDetails"
         component={EquipmentDetailsScreen}
         options={{
-          headerShown: false,
+          title: "Detalhes do Equipamento",
         }}
+      />
+      <Stack.Screen
+        name="AddService"
+        component={AddServiceScreen}
+        options={{
+          title: "Novo Atendimento",
+        }}
+      />
+      <Stack.Screen
+        name="ServiceDetails"
+        component={ServiceDetailsScreen}
+        options={{ title: "Detalhes do Atendimento" }}
       />
     </Stack.Navigator>
   );

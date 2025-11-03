@@ -12,8 +12,14 @@ import CustomHeader from "~/components/CustomHeader";
 import PrimaryButton from "~/components/PrimaryButton";
 import MaintenanceIndicator from "~/components/MaintenanceIndicator";
 import { supabase } from "~/services/supabaseClient";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { Equipment } from "~/types";
+import { Ionicons } from "@expo/vector-icons";
+import { dateFormat } from "~/utils/functions";
 
 const EquipmentDetailsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -47,6 +53,21 @@ const EquipmentDetailsScreen: React.FC = () => {
     load();
   }, [equipmentId]);
 
+  // Reload when returning from a screen that made changes
+  useFocusEffect(
+    React.useCallback(() => {
+      const params = (navigation as any)
+        .getState()
+        ?.routes?.find((r: any) => r.name === "EquipmentDetails")?.params;
+
+      if (params?.refresh) {
+        load();
+        // Clear the refresh param
+        navigation.setParams({ refresh: undefined } as never);
+      }
+    }, [navigation])
+  );
+
   if (loading)
     return (
       <ScreenContainer>
@@ -78,7 +99,7 @@ const EquipmentDetailsScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Detalhes do Equipamento" />
+      {/* <CustomHeader title="Detalhes do Equipamento" /> */}
 
       {/* Equipment Info Card */}
       <View style={styles.card}>
@@ -95,7 +116,7 @@ const EquipmentDetailsScreen: React.FC = () => {
         </View>
 
         {equipment.location && (
-          <Text style={styles.location}>📍 {equipment.location}</Text>
+          <Text style={styles.location}>{equipment.location}</Text>
         )}
 
         <View style={styles.divider} />
@@ -162,14 +183,18 @@ const EquipmentDetailsScreen: React.FC = () => {
         {equipment.installation_date && (
           <View style={styles.specRow}>
             <Text style={styles.specLabel}>Instalação:</Text>
-            <Text style={styles.specValue}>{equipment.installation_date}</Text>
+            <Text style={styles.specValue}>
+              {dateFormat(equipment.installation_date)}
+            </Text>
           </View>
         )}
 
         {equipment.warranty_expiry && (
           <View style={styles.specRow}>
             <Text style={styles.specLabel}>Garantia até:</Text>
-            <Text style={styles.specValue}>{equipment.warranty_expiry}</Text>
+            <Text style={styles.specValue}>
+              {dateFormat(equipment.warranty_expiry)}
+            </Text>
           </View>
         )}
 
@@ -187,13 +212,10 @@ const EquipmentDetailsScreen: React.FC = () => {
         title="Criar Atendimento"
         onPress={() =>
           navigation.navigate(
-            "ServicesList" as never,
+            "AddService" as never,
             {
-              screen: "AddService",
-              params: {
-                equipmentId: equipment.id,
-                unitId: equipment.unit_id,
-              },
+              equipmentId: equipment.id,
+              unitId: equipment.unit_id,
             } as never
           )
         }
@@ -216,18 +238,26 @@ const EquipmentDetailsScreen: React.FC = () => {
               style={styles.serviceItem}
               onPress={() =>
                 navigation.navigate(
-                  "ServicesList" as never,
-                  { screen: "ServiceDetails", params: { id: s.id } } as never
+                  "ServiceDetails" as never,
+                  { id: s.id } as never
                 )
               }
               activeOpacity={0.7}
             >
               <View style={styles.serviceHeader}>
                 <Text style={styles.serviceType}>{s.type}</Text>
-                <Text style={styles.serviceDate}>📅 {s.date}</Text>
+                <View style={styles.iconTextRow}>
+                  <Ionicons name="calendar" size={14} color="#6b7280" />
+                  <Text style={styles.serviceDate}>{dateFormat(s.date)}</Text>
+                </View>
               </View>
               {s.technician && (
-                <Text style={styles.serviceTech}>👷 {s.technician}</Text>
+                <View style={styles.iconTextRow}>
+                  <Ionicons name="person" size={14} color="#6b7280" />
+                  <Text style={styles.serviceTech}>
+                    Técnico: {s.technician}
+                  </Text>
+                </View>
               )}
               <Text style={styles.serviceStatus}>Status: {s.status}</Text>
             </TouchableOpacity>
@@ -317,6 +347,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 12,
   },
+  iconTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    gap: 4,
+  },
   serviceItem: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
@@ -344,7 +380,6 @@ const styles = StyleSheet.create({
   serviceTech: {
     fontSize: 13,
     color: "#6b7280",
-    marginBottom: 4,
   },
   serviceStatus: {
     fontSize: 13,

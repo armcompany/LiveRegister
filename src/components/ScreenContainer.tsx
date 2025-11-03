@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   View,
@@ -8,6 +7,7 @@ import {
   ScrollView,
   ScrollViewProps,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
   children: React.ReactNode;
@@ -53,7 +53,11 @@ const ScreenContainer: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === "web" ? 0 : -44,
+    backgroundColor: "#fff",
+  },
   kav: { flex: 1 },
   content: {
     flex: 1,

@@ -6,13 +6,21 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Image,
+  ScrollView,
 } from "react-native";
 import ScreenContainer from "~/components/ScreenContainer";
-import CustomHeader from "~/components/CustomHeader";
 import { supabase } from "~/services/supabaseClient";
-import { useRoute } from "@react-navigation/native";
+import {
+  useRoute,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
+import { dateFormat } from "~/utils/functions";
+import { Ionicons } from "@expo/vector-icons";
 
 const ServiceDetailsScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const id: string = route.params?.id;
   const [loading, setLoading] = useState(true);
@@ -23,7 +31,14 @@ const ServiceDetailsScreen: React.FC = () => {
     setLoading(true);
     const { data } = await supabase
       .from("services")
-      .select("*")
+      .select(
+        `
+        *,
+        clients (name),
+        units (name),
+        equipment (tag, location)
+      `
+      )
       .eq("id", id)
       .single();
     setService(data);
@@ -33,6 +48,21 @@ const ServiceDetailsScreen: React.FC = () => {
   useEffect(() => {
     load();
   }, [id]);
+
+  // Reload when returning from a screen that made changes
+  useFocusEffect(
+    React.useCallback(() => {
+      const params = (navigation as any)
+        .getState()
+        ?.routes?.find((r: any) => r.name === "ServiceDetails")?.params;
+
+      if (params?.refresh) {
+        load();
+        // Clear the refresh param
+        navigation.setParams({ refresh: undefined } as never);
+      }
+    }, [navigation])
+  );
 
   const updateStatus = async (newStatus: string) => {
     try {
@@ -89,7 +119,46 @@ const ServiceDetailsScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Detalhes do Atendimento" />
+      {/* <CustomHeader title="Detalhes do Atendimento" /> */}
+
+      {/* Context Card */}
+      {(service?.clients || service?.units || service?.equipment) && (
+        <View style={styles.contextCard}>
+          <Text style={styles.contextTitle}>Informações do Atendimento</Text>
+          {service?.clients?.name && (
+            <View style={styles.contextRow}>
+              <Ionicons name="person-circle" size={20} color="#1e40af" />
+              <Text style={styles.contextItem}>
+                Cliente: {service.clients.name}
+              </Text>
+            </View>
+          )}
+          {service?.units?.name && (
+            <View style={styles.contextRow}>
+              <Ionicons name="business" size={20} color="#1e40af" />
+              <Text style={styles.contextItem}>
+                Unidade: {service.units.name}
+              </Text>
+            </View>
+          )}
+          {service?.equipment?.tag && (
+            <View style={styles.contextRow}>
+              <Ionicons name="snow" size={20} color="#1e40af" />
+              <Text style={styles.contextItem}>
+                Equipamento: {service.equipment.tag}
+              </Text>
+            </View>
+          )}
+          {service?.equipment?.location && (
+            <View style={styles.contextRow}>
+              <Ionicons name="location" size={20} color="#1e40af" />
+              <Text style={styles.contextItem}>
+                Local: {service.equipment.location}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Main Info Card */}
       <View style={styles.card}>
@@ -98,7 +167,9 @@ const ServiceDetailsScreen: React.FC = () => {
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Data</Text>
-            <Text style={styles.infoValue}>{service?.date || "--"}</Text>
+            <Text style={styles.infoValue}>
+              {dateFormat(service?.date) || "--"}
+            </Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Horário</Text>
@@ -195,11 +266,113 @@ const ServiceDetailsScreen: React.FC = () => {
           <Text style={styles.notesText}>{service.notes}</Text>
         </View>
       )}
+
+      {/* Photos Card */}
+      {service?.photos && service.photos.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>
+            Fotos ({service.photos.length})
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.photosContainer}>
+              {service.photos.map((photoUri: string, index: number) => (
+                <Image
+                  key={index}
+                  source={{ uri: photoUri }}
+                  style={styles.photo}
+                  resizeMode="cover"
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Technical Details Card */}
+      {service?.technical_details &&
+        Object.keys(service.technical_details).length > 0 && (
+          <View style={styles.card}>
+            <View style={styles.technicalHeader}>
+              <Ionicons name="build" size={26} color="#2563eb" />
+              <Text style={styles.sectionTitle}>
+                Detalhes Técnicos da Manutenção
+              </Text>
+            </View>
+            <View style={styles.technicalGrid}>
+              {Object.entries(service.technical_details).map(
+                ([key, value]: [string, any]) => {
+                  // Format the value based on type
+                  let displayValue = "--";
+
+                  if (value === null || value === undefined) {
+                    displayValue = "--";
+                  } else if (Array.isArray(value)) {
+                    // Handle arrays (like MEASUREMENTS, PARTS_REPLACED)
+                    displayValue =
+                      value.length > 0
+                        ? value
+                            .map((item, index) =>
+                              typeof item === "object"
+                                ? Object.entries(item)
+                                    .map(([k, v]) => `${k}: ${v}`)
+                                    .join(", ")
+                                : item
+                            )
+                            .join("\n")
+                        : "--";
+                  } else if (typeof value === "object") {
+                    // Handle objects
+                    displayValue = Object.entries(value)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join("\n");
+                  } else {
+                    displayValue = value.toString();
+                  }
+
+                  return (
+                    <View key={key} style={styles.technicalItem}>
+                      <Text style={styles.technicalLabel}>
+                        {key
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </Text>
+                      <Text style={styles.technicalValue}>{displayValue}</Text>
+                    </View>
+                  );
+                }
+              )}
+            </View>
+          </View>
+        )}
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
+  contextCard: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  contextTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1e40af",
+    marginBottom: 8,
+  },
+  contextRow: {
+    paddingVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  contextItem: {
+    fontSize: 14,
+    color: "#1e40af",
+  },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -277,7 +450,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 12,
   },
   descriptionText: {
     fontSize: 15,
@@ -335,6 +507,66 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
     textAlign: "center",
+  },
+  photosContainer: {
+    flexDirection: "row",
+    gap: 12,
+    paddingRight: 16,
+  },
+  photo: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    backgroundColor: "#f3f4f6",
+  },
+  detailRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+    gap: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6b7280",
+    minWidth: 140,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: "#111827",
+    flex: 1,
+  },
+  technicalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  technicalGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  technicalItem: {
+    backgroundColor: "#f9fafb",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    padding: 12,
+    minWidth: "48%",
+    flexGrow: 1,
+  },
+  technicalLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#6b7280",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  technicalValue: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
   },
 });
 

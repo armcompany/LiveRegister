@@ -3,6 +3,7 @@ import { View, Alert, StyleSheet, Text } from "react-native";
 import ScreenContainer from "~/components/ScreenContainer";
 import CustomHeader from "~/components/CustomHeader";
 import FormInput from "~/components/FormInput";
+import DatePickerInput from "~/components/DatePickerInput";
 import PrimaryButton from "~/components/PrimaryButton";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
@@ -93,7 +94,17 @@ const AddEquipmentScreen: React.FC = () => {
         "Equipamento criado",
         "O equipamento foi cadastrado com sucesso."
       );
-      navigation.goBack();
+
+      // Get clientId from route params to navigate back to ClientDetails
+      const clientId = route.params?.clientId;
+      if (clientId) {
+        navigation.navigate(
+          "ClientDetails" as never,
+          { id: clientId, refresh: true } as never
+        );
+      } else {
+        navigation.goBack();
+      }
     } catch (e: any) {
       Alert.alert("Erro", e?.message ?? "Não foi possível salvar.");
     } finally {
@@ -103,7 +114,7 @@ const AddEquipmentScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Novo Equipamento" />
+      {/* <CustomHeader title="Novo Equipamento" /> */}
 
       <Text style={styles.sectionHeader}>Identificação</Text>
 
@@ -252,14 +263,13 @@ const AddEquipmentScreen: React.FC = () => {
       <Controller
         control={control}
         name="installation_date"
-        render={({ field: { onChange, value, onBlur } }) => (
-          <FormInput
+        render={({ field: { onChange, value } }) => (
+          <DatePickerInput
             label="Data de Instalação"
-            placeholder="AAAA-MM-DD"
-            onChangeText={onChange}
             value={value}
-            onBlur={onBlur}
+            onChange={onChange}
             error={errors.installation_date?.message}
+            disabled={loading}
           />
         )}
       />
@@ -267,14 +277,13 @@ const AddEquipmentScreen: React.FC = () => {
       <Controller
         control={control}
         name="warranty_expiry"
-        render={({ field: { onChange, value, onBlur } }) => (
-          <FormInput
+        render={({ field: { onChange, value } }) => (
+          <DatePickerInput
             label="Vencimento da Garantia"
-            placeholder="AAAA-MM-DD"
-            onChangeText={onChange}
             value={value}
-            onBlur={onBlur}
+            onChange={onChange}
             error={errors.warranty_expiry?.message}
+            disabled={loading}
           />
         )}
       />

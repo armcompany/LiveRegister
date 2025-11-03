@@ -3,6 +3,8 @@ import { View, Text, Alert, StyleSheet } from "react-native";
 import ScreenContainer from "~/components/ScreenContainer";
 import CustomHeader from "~/components/CustomHeader";
 import FormInput from "~/components/FormInput";
+import DatePickerInput from "~/components/DatePickerInput";
+import TimePickerInput from "~/components/TimePickerInput";
 import PrimaryButton from "~/components/PrimaryButton";
 import PhotoUploader from "~/components/PhotoUploader";
 import TechnicalDetailsForm from "~/components/TechnicalDetailsForm";
@@ -12,6 +14,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "~/services/supabaseClient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { TechnicalDetails } from "~/types";
+import { Ionicons } from "@expo/vector-icons";
 
 const schema = yup.object({
   client_id: yup.string().required("Selecione o cliente."),
@@ -140,7 +143,24 @@ const AddServiceScreen: React.FC = () => {
       }
 
       Alert.alert("Serviço criado", "O serviço foi cadastrado com sucesso.");
-      navigation.navigate("ServicesList" as never);
+
+      // Navigate back with refresh flag
+      if (presetEquipmentId) {
+        navigation.navigate(
+          "EquipmentDetails" as never,
+          { equipmentId: presetEquipmentId, refresh: true } as never
+        );
+      } else if (presetClientId) {
+        navigation.navigate(
+          "ClientDetails" as never,
+          { id: presetClientId, refresh: true } as never
+        );
+      } else {
+        navigation.navigate(
+          "ServicesListMain" as never,
+          { refresh: true } as never
+        );
+      }
     } catch (e: any) {
       Alert.alert("Erro", e?.message ?? "Não foi possível salvar.");
     } finally {
@@ -152,7 +172,7 @@ const AddServiceScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll maxWidth={720}>
-      <CustomHeader title="Novo Atendimento" />
+      {/* <CustomHeader title="Novo Atendimento" /> */}
 
       {loadingData ? (
         <Text style={styles.loadingText}>Carregando dados...</Text>
@@ -163,15 +183,30 @@ const AddServiceScreen: React.FC = () => {
             <View style={styles.contextCard}>
               <Text style={styles.contextTitle}>Atendimento para:</Text>
               {clientName && (
-                <Text style={styles.contextItem}>👤 Cliente: {clientName}</Text>
+                <View style={styles.rowView}>
+                  <Ionicons name="person-circle" size={20} color="#1e40af" />
+                  <Text style={styles.contextItem}>Cliente: {clientName}</Text>
+                </View>
               )}
               {unitName && (
-                <Text style={styles.contextItem}>🏢 Unidade: {unitName}</Text>
+                <View style={styles.rowView}>
+                  <Ionicons name="business" size={20} color="#1e40af" />
+                  <Text style={styles.contextItem}>Unidade: {unitName}</Text>
+                </View>
               )}
               {equipmentTag && (
-                <Text style={styles.contextItem}>
-                  ❄️ Equipamento: {equipmentTag}
-                </Text>
+                <View style={styles.rowView}>
+                  <Ionicons name="snow" size={20} color="#1e40af" />
+                  <Text style={styles.contextItem}>
+                    Equipamento: {equipmentTag}
+                  </Text>
+                </View>
+              )}
+              {unitName && (
+                <View style={styles.rowView}>
+                  <Ionicons name="location" size={20} color="#1e40af" />
+                  <Text style={styles.contextItem}>Unidade: {unitName}</Text>
+                </View>
               )}
             </View>
           )}
@@ -230,15 +265,13 @@ const AddServiceScreen: React.FC = () => {
           <Controller
             control={control}
             name="date"
-            render={({ field: { onChange, value, onBlur } }) => (
-              <FormInput
+            render={({ field: { onChange, value } }) => (
+              <DatePickerInput
                 label="Data"
-                placeholder="AAAA-MM-DD"
-                autoCapitalize="none"
-                onChangeText={onChange}
                 value={value}
-                onBlur={onBlur}
+                onChange={onChange}
                 error={errors.date?.message}
+                disabled={loading || loadingData}
               />
             )}
           />
@@ -246,15 +279,13 @@ const AddServiceScreen: React.FC = () => {
           <Controller
             control={control}
             name="time"
-            render={({ field: { onChange, value, onBlur } }) => (
-              <FormInput
+            render={({ field: { onChange, value } }) => (
+              <TimePickerInput
                 label="Hora"
-                placeholder="HH:MM"
-                autoCapitalize="none"
-                onChangeText={onChange}
                 value={value}
-                onBlur={onBlur}
+                onChange={onChange}
                 error={errors.time?.message}
+                disabled={loading || loadingData}
               />
             )}
           />
@@ -337,6 +368,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
+  rowView: {
+    paddingVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   contextTitle: {
     fontSize: 14,
     fontWeight: "700",
@@ -346,7 +383,7 @@ const styles = StyleSheet.create({
   contextItem: {
     fontSize: 14,
     color: "#1e40af",
-    marginBottom: 4,
+    textAlign: "center",
   },
   loadingText: {
     fontSize: 14,
